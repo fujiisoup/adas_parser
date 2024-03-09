@@ -1,0 +1,20 @@
+# caches
+__pycache__
+.cache
+.benchmarks
+.pytest_cache
+
+# install
+adas_parser.egg-info
+build
+dist
+
+# data dir
+adas_parser/downloaded/*
+
+# notebooks
+notebooks
+
+# vscode
+.vscode
+*.code-workspace
