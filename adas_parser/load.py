@@ -63,7 +63,7 @@ def load(dataname, force_download=False, return_xr=False):
     assure_directory(cache_dir)
 
     filename = os.sep.join((cache_dir, dataname + '.dat'))
-    if os.path.exists(filename) or force_download:
+    if not os.path.exists(filename) or force_download:
         url, data = search_download(dataname)
         # download the file into cache directory
         with open(filename, 'w') as f:
@@ -124,12 +124,13 @@ def _read_pec(filename, return_xr):
             pec = pec + [float(l) for l in line.split(' ') if len(l.strip()) > 1]
             if len(pec) >= ntemp * ndens:
                 break
-        coords['ne'] = ne
-        coords['Te'] = Te
-        pec = np.array(pec).reshape(ndens, ntemp)
+        coords['ne'] = 'ne', np.array(ne) * 1e6, {'units': 'm-3'}
+        coords['Te'] = 'Te', Te, {'units': 'eV'}
+        pec = np.array(pec).reshape(ndens, ntemp) * 1e-6
         if return_xr:
             data.append(xr.DataArray(
-                pec, dims=['ne', 'Te'], coords=coords
+                pec, dims=['ne', 'Te'], coords=coords,
+                attrs={'units': 'm3/s'}, name='photon emission coefficient'
             ))
         else:
             data[header] = (pec, ne, Te)
