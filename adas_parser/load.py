@@ -31,6 +31,9 @@ def assure_directory(dirname):
         assure_directory(parent_dir)
         os.mkdir(dirname)
 
+def SLJ_to_str(S, L, J):
+    return '{:s}{:s}{:s}'.format(S.strip(), 'SPDFGHIJKLMN'[int(L)], J.strip())
+
 
 def search_download(filename, adas_version=None):
     r'''
@@ -80,6 +83,8 @@ def _read_file(filename, dataname, return_xr):
         return _read_pec(filename, return_xr)
     elif dataname[:3] == 'qcx':
         return _read_qcx(filename, return_xr)
+    elif dataname[:3] == 'rrc':
+        return _read_rrc(filename, return_xr)
     raise NotImplementedError(
         'Trying to read {}, but filetype {} is not supported.'.format(
             filename, dataname
@@ -209,5 +214,79 @@ def _read_qcx(filename, return_xr):
     if len(cs_n) > 0:
         data['cross_section_n'] = xr.concat(cs_n, dim='n')
         
+    return data
+
+
+def _read_rrc(filename, return_xr):
+    '''read rrc file'''
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+    seq = lines[0][5:7].strip()
+    nucchg = int(lines[0][21:])
+
+    for i in range(len(lines)):
+        if "PARENT TERM INDEXING" in lines[i]:
+            break              
+    line = lines[i]
+    n_upper = int(line[line.find('NPRNTI=') + 7:])
+    lines = lines[i + 4:]
+    upper_term = []
+    upper_energy = []
+    for i in range(n_upper):
+        line = lines[i]
+        term = line[7:30].strip() + '(' + SLJ_to_str(line[32], line[34], line[36:40]) + ')'
+        upper_term.append(term)
+        upper_energy.append(floatF(lines[i][42:53]))
+
+    for i in range(len(lines)):
+        if "LS RESOLVED TERM INDEXING" in lines[i]:
+            break              
+    line = lines[i]
+    n_lower = int(line[line.find('NTRM=') + 5:])
+    lines = lines[i + 4:]
+    lower_term = []
+    lower_energy = []
+    for i in range(n_lower):
+        line = lines[i]
+        term = line[7:30].strip() + '(' + SLJ_to_str(line[32], line[34], line[36:40]) + ')'
+        lower_term.append(term)
+        lower_energy.append(floatF(lines[i][42:53]))
+            
+    lines = lines[n_lower:]
+    rates = []
+    for PRTI in range(1, n_upper + 1):
+        for i in range(len(lines)):
+            if "PRTI= {}".format(PRTI) in lines[i] or "PRTI={}".format(PRTI) in lines[i]:
+                break
+        line = lines[i + 2]
+        Te = [floatF(l) for l in line[line.find('=')+1:].split(' ') if len(l) > 0]
+        lines = lines[i + 4:]
+        rate1 = []
+        for line in lines:
+            try:
+                dest = int(line[:7].strip())
+            except ValueError:
+                break
+            r = [floatF(l) for l in line[7:].split(' ') if len(l) > 0]
+            rate1.append((dest, r))
+        rates.append((Te, rate1))
+
+    if not return_xr:
+        return rates, lower_term, lower_energy, upper_term, upper_energy
+    # return xr
+    data = []
+    for i, (Te, rate1) in enumerate(rates):
+        for dest, r in rate1:
+            data.append(xr.DataArray(
+                r, dims=['Te'], 
+                coords={
+                    'Te': Te, 
+                    'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
+                    'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
+                }
+            ))
+    data = xr.concat(data, dim='index')
+    data = data.set_index(index=['upper_term', 'lower_term']).unstack()
     return data
 

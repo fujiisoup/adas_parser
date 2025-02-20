@@ -43,3 +43,13 @@ def test_read_qcx(filename):
     datafile = filename[filename.rfind(os.sep) + 1:]
     data = adas_parser._read_file(filename, datafile, return_xr=True)
     print(data)
+
+
+@pytest.mark.parametrize('filename', [f for f in test_files if 'rrc' in f])
+def test_read_rrc(filename):
+    datafile = filename[filename.rfind(os.sep) + 1:]
+    data = adas_parser._read_file(filename, datafile, return_xr=True)
+    print(data)
+
+    if datafile == 'rrc96#b_c1ls.dat':
+        assert '2S2 2P2(3P4.0)' in data['lower_term']
