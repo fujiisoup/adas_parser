@@ -22,6 +22,9 @@ def _auto_decode(s):
             return s.strip()
 
 
+def floatF(s):
+    return float(s.replace('D', 'E'))
+
 def assure_directory(dirname):
     if not os.path.exists(dirname):
         parent_dir = dirname[: dirname.rfind(os.sep)]
@@ -75,6 +78,8 @@ def load(dataname, force_download=False, return_xr=False):
 def _read_file(filename, dataname, return_xr):
     if dataname[:3] == 'pec':
         return _read_pec(filename, return_xr)
+    elif dataname[:3] == 'qcx':
+        return _read_qcx(filename, return_xr)
     raise NotImplementedError(
         'Trying to read {}, but filetype {} is not supported.'.format(
             filename, dataname
@@ -139,10 +144,70 @@ def _read_pec(filename, return_xr):
 
     if return_xr:
         data = xr.concat(data, dim='index')
-        stack_keys = ['line', 'TYPE']
-        if data['TYPE'].ndim == 0:
-            data['TYPE'] = 'index', [data['TYPE'].item()] * data.sizes['index']
-        return data.set_index(index=stack_keys).unstack()
+        if data['TYPE'].ndim != 0:
+            return data.set_index(index=['line', 'TYPE']).unstack()
+        else:
+            return data.swap_dims(index='line').expand_dims('TYPE')            
+    return data
 
+
+def _read_qcx(filename, return_xr):
+    '''read qcx file'''
+
+    if not return_xr:
+        raise NotImplementedError('requires xarray to return xarray dataset')
+
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    
+    line = lines[0]
+    receiver = line[:10].replace(' ', '')
+    donor = line[10:line.find('/')].replace(' ', '')
+
+    line = lines[1]
+    n_energy = int(line[:line.find('/')])
+    line = lines[2]
+    nmin = int(line[:line.find('/')])
+    line = lines[3]
+    nmax = int(line[:line.find('/')])
+    
+    line = lines[4]
+    energy = [
+        floatF(l) for l in line[:line.find('/')].split(' ') 
+        if len(l.strip()) > 0
+    ]
+    
+    cs_n, cs_nl, cs_nlm = [], [], []
+    for line in lines[12:]:
+        try:
+            n = int(line[:4])
+        except ValueError:
+            break
+        try:
+            l = int(line[4:7])
+            try: 
+                m = int(line[7:10])
+                cs_nlm.append(xr.DataArray(
+                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                    dims=['energy'], coords={'energy': energy, 'n': n, 'l': l, 'm': m}
+                ))
+            except ValueError:
+                cs_nl.append(xr.DataArray(
+                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                    dims=['energy'], coords={'energy': energy, 'n': n, 'l': l}
+                ))
+        except ValueError:
+            cs_n.append(xr.DataArray(
+                [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                dims=['energy'], coords={'energy': energy, 'n': n}
+            ))
+    data = xr.Dataset({}, coords={'energy': energy})
+    if len(cs_nlm) > 0:
+        data['cross_section_nlm'] = xr.concat(cs_nlm, dim='nlm').set_index(nlm=['n', 'l', 'm']).unstack()
+    if len(cs_nl) > 0:
+        data['cross_section_nl'] = xr.concat(cs_nl, dim='nl').set_index(nl=['n', 'l']).unstack()
+    if len(cs_n) > 0:
+        data['cross_section_n'] = xr.concat(cs_n, dim='n')
+        
     return data
 
