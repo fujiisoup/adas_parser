@@ -60,7 +60,7 @@ def search_download(filename, adas_version=None):
             break
     
     if content is None:
-        raise FileNotFoundError('ADAS data {} was not found'.format(dataname))
+        raise FileNotFoundError('ADAS data {} was not found'.format(filename))
     return url, content
     
 
@@ -282,11 +282,12 @@ def _read_rrc(filename, return_xr):
                 r, dims=['Te'], 
                 coords={
                     'Te': Te, 
+                    'lower_index': dest - 1, 'upper_index': i,
                     'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
                     'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
                 }
             ))
     data = xr.concat(data, dim='index')
-    data = data.set_index(index=['upper_term', 'lower_term']).unstack()
+    data = data.set_index(index=['upper_index', 'lower_index']).unstack()
     return data
 
