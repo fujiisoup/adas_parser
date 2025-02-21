@@ -286,7 +286,7 @@ def _read_rrc(filename, return_xr):
             data.append(xr.DataArray(
                 r, dims=['Te'], 
                 coords={
-                    'Te': ('K', Te, {'units': 'K'}), 
+                    'Te': ('Te', Te, {'units': 'K'}), 
                     'lower_index': dest - 1, 'upper_index': i,
                     'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
                     'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
