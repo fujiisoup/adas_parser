@@ -11,6 +11,7 @@ test_files = [os.sep.join((test_dir, f)) for f in os.listdir(test_dir) if f[-4:]
     ('qef97#he_2s-s_kvi#c6', 'https://open.adas.ac.uk/download/adf12/qef97][he/qef97][he_2s-s_kvi][c6.dat'), 
     ('qef93#h_c6', 'https://open.adas.ac.uk/download/adf12/qef93][h/qef93][h_c6.dat'),
     ('rrc96#b_c1ls', 'https://open.adas.ac.uk/download/adf08/rrc96][b/rrc96][b_c1ls.dat'),
+    ('rrc93##_c6ls', 'https://open.adas.ac.uk/download/adf08/rrc93][][/rrc93][][_c6ls.dat'),
 ])
 def test_find_url(dataname, path):
     actual, _ = adas_parser.search_download(dataname)
@@ -18,6 +19,7 @@ def test_find_url(dataname, path):
 
 
 @pytest.mark.parametrize('dataname', [
+    'rrc93##_c6ls',
     'rrc96#b_c1ls',
     'rrc96#be_c2ls',
     'qcx#h0_ory#h1',

@@ -60,7 +60,7 @@ def search_download(filename, adas_version=None):
             break
     
     if content is None:
-        raise FileNotFoundError('ADAS data {} was not found'.format(filename))
+        raise FileNotFoundError('ADAS data {} was not found.'.format(filename))
     return url, content
     
 
@@ -288,6 +288,9 @@ def _read_rrc(filename, return_xr):
                 }
             ))
     data = xr.concat(data, dim='index')
+    for key in ['upper_index', 'lower_index']:
+        if data[key].ndim == 0:
+            data[key] = xr.full_like(data['index'], data[key])
     data = data.set_index(index=['upper_index', 'lower_index']).unstack()
     return data
 
