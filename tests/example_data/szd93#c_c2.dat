@@ -1,0 +1,93 @@
+    2    /C   IONISATION RATE COEFFICIENTS   /
+C + 2/C + 3/   24/I.P. =           386159.7/ICODE =  1/FCODE =  1/ISEL=   1
+ 1.000D+00 2.000D+00 3.000D+00 4.000D+00 5.000D+00 7.000D+00
+ 1.000D+01 1.500D+01 2.000D+01 3.000D+01 4.000D+01 5.000D+01
+ 7.000D+01 1.000D+02 1.500D+02 2.000D+02 3.000D+02 4.000D+02
+ 5.000D+02 7.000D+02 1.000D+03 2.000D+03 5.000D+03 1.000D+04
+ 3.586D-30 1.174D-19 4.068D-16 2.485D-14 2.992D-13 5.304D-12
+ 4.753D-11 2.719D-10 6.639D-10 1.657D-09 2.646D-09 3.518D-09
+ 4.884D-09 6.239D-09 7.487D-09 8.130D-09 8.683D-09 8.845D-09
+ 8.857D-09 8.719D-09 8.411D-09 7.507D-09 6.063D-09 4.989D-09
+C + 2/C + 3/   24/I.P. =           333791.1/ICODE =  2/FCODE =  1/ISEL=   2
+ 1.000D+00 2.000D+00 3.000D+00 4.000D+00 5.000D+00 7.000D+00
+ 1.000D+01 1.500D+01 2.000D+01 3.000D+01 4.000D+01 5.000D+01
+ 7.000D+01 1.000D+02 1.500D+02 2.000D+02 3.000D+02 4.000D+02
+ 5.000D+02 7.000D+02 1.000D+03 2.000D+03 5.000D+03 1.000D+04
+ 2.161D-27 2.903D-18 3.520D-15 1.290D-13 1.152D-12 1.467D-11
+ 1.036D-10 4.946D-10 1.105D-09 2.522D-09 3.850D-09 4.978D-09
+ 6.627D-09 8.334D-09 9.802D-09 1.054D-08 1.114D-08 1.130D-08
+ 1.128D-08 1.106D-08 1.065D-08 9.483D-09 7.660D-09 6.313D-09
+C----------------------------------------------------------------------------
+C
+C  ELECTRON IMPACT IONISATION RATE COEFFICIENT LIST:
+C
+C   ISEL  INITIAL MET.    FINAL  MET.           SOURCE
+C           ION   CODE     ION   CODE
+C   ----  ------- ----   ------- ----     -----------------------------------
+C     1   C + 2    1     C + 3    1       *BELL ET AL. (1982) CLM-R216
+C     2   C + 2    2     C + 3    1       *YOUNGER, (1981) PHYS REV A V24 NO.3
+C
+C         PREFERRED DATA INDICATED BY *
+C
+C
+C
+C  NOTES.
+C ------
+C
+C   ISEL  INITIAL MET.    DESIG.             FINAL  MET.    DESIG.
+C           ION   CODE                        ION   CODE
+C   ----  ------- ---- ---------------      ------- ---- ---------------
+C     1   C + 2    1     1S2 2S2(1S)         C + 3    1     1S2 2S( 2S)
+C     2   C + 2    2     1S2 2S2P(3P)        C + 3    1     1S2 2S( 2S)
+C
+C
+C            WILLIAM J. DICKSON     JET    11TH MAY 1992
+C
+C  Update:  10/04/97  HP Summers - corrected small misprints in isel 1 case
+C----------------------------------------------------------------------------
+ 
+C---------------------------------------------------------------------------------
+C ADAS ADF07 DATA - SCCS info: @(#)$Header: /home/adascvs/adas/adf07/szd93#c/szd93#c_c2.dat,v 2.1 2004/07/06 22:01:15 whitefor Exp $ Date $Date: 2004/07/06 22:01:15 $
+C---------------------------------------------------------------------------------
+
+C-----------------------------------------------------------------------
+C                               OPEN-ADAS
+C                               +++++++++
+C
+C This file has been downloaded from OPEN-ADAS (http://open.adas.ac.uk)
+C on 21-Feb-2025.
+C
+C TERMS AND CONDITIONS
+C --------------------
+C
+C The user of the OPEN-ADAS system and data (hereinafter "the User")
+C accepts the following terms and conditions:
+C
+C   1. The University of Strathclyde uses all reasonable endeavours to
+C      ensure the accuracy of the data provided and any information
+C      given, but the University makes no warranty, expressed or implied
+C      as to its accuracy, integrity, fitness for purpose and shall not
+C      be responsible for the use to which the data is put by the User
+C      and/or any consequences arising out of any inaccuracies or
+C      omissions.
+C
+C   2. Any downloaded OPEN-ADAS file is made available for the
+C      personal use of the User only.  It must not be used for any
+C      commercial application, incorporated into any web site or in
+C      any form re-distributed without express prior written permission
+C      from the ADAS Project. In particular, but not by way of
+C      limitation, it must not be:
+C        *  inserted into a managed database structure,
+C        *  redistributed along with a modelling or analysis code,
+C        *  made available on a public website.
+C
+C Permission for OPEN-ADAS data incorporation in non-commercial
+C code/system development for scientific advance will not be
+C unreasonably withheld, but will be subject to written agreement
+C on a case by case basis.
+C
+C The User will indemnify the University of Strathclyde and keep it
+C fully and effectively indemnified against each and every claim made
+C against the University as a result of the User's use of the data.
+C
+C-----------------------------------------------------------------------

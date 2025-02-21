@@ -12,6 +12,9 @@ except ImportError:
     __HAS_XARRAY__ = False
 
 
+def split(s):
+    return [l for l in s.split(' ') if len(l.strip()) > 0]
+
 def _auto_decode(s):
     try:
         return int(s)
@@ -85,6 +88,8 @@ def _read_file(filename, dataname, return_xr):
         return _read_qcx(filename, return_xr)
     elif dataname[:3] == 'rrc':
         return _read_rrc(filename, return_xr)
+    elif dataname[:3] == 'szd':
+        return _read_szd(filename, return_xr)
     raise NotImplementedError(
         'Trying to read {}, but filetype {} is not supported.'.format(
             filename, dataname
@@ -281,7 +286,7 @@ def _read_rrc(filename, return_xr):
             data.append(xr.DataArray(
                 r, dims=['Te'], 
                 coords={
-                    'Te': Te, 
+                    'Te': ('K', Te, {'units': 'K'}), 
                     'lower_index': dest - 1, 'upper_index': i,
                     'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
                     'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
@@ -293,4 +298,34 @@ def _read_rrc(filename, return_xr):
             data[key] = xr.full_like(data['index'], data[key])
     data = data.set_index(index=['upper_index', 'lower_index']).unstack()
     return data
+
+
+def _read_szd(filename, return_xr):
+    '''read szd file'''
+    if not return_xr:
+        raise NotImplementedError('requires xarray to return xarray dataset')
+
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+    line, lines = lines[0], lines[1:]
+    nblocks, element, name = split(line)[:3]
+    element = element.replace('/', '')
+
+    data = []
+    for block in range(int(nblocks)):
+        line, lines = lines[0], lines[1:]
+        nTe = int(line[line.find('/I.P.') - 4:line.find('/I.P.')])
+        Te = []
+        while len(Te) < nTe:
+            line, lines = lines[0], lines[1:]
+            Te += [floatF(l) for l in line.split(' ') if len(l.strip()) > 0]
+        rate = []
+        while len(rate) < nTe:
+            line, lines = lines[0], lines[1:]
+            rate += [floatF(l) for l in line.split(' ') if len(l.strip()) > 0]
+        data.append(xr.DataArray(
+            rate, dims=['Te'], coords={'Te': Te, 'lower_index': block, 'name': name, 'element': element}
+        ))
+    return xr.concat(data, dim='lower_index')
 

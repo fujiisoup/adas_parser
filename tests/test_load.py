@@ -56,3 +56,14 @@ def test_read_rrc(filename):
 
     if datafile == 'rrc96#b_c1ls.dat':
         assert '2S2 2P2(3P4.0)' in data['lower_term']
+
+
+@pytest.mark.parametrize('filename', [f for f in test_files if 'szd' in f])
+def test_read_rrc(filename):
+    datafile = filename[filename.rfind(os.sep) + 1:]
+    data = adas_parser._read_file(filename, datafile, return_xr=True)
+    print(data)
+
+    if datafile == 'szd93#c_c2.dat':
+        pass
+        assert len(data['Te']) == 24
