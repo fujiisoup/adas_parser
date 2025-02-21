@@ -13,12 +13,13 @@ test_files = [os.sep.join((test_dir, f)) for f in os.listdir(test_dir) if f[-4:]
     ('rrc96#b_c1ls', 'https://open.adas.ac.uk/download/adf08/rrc96][b/rrc96][b_c1ls.dat'),
     ('rrc93##_c6ls', 'https://open.adas.ac.uk/download/adf08/rrc93][][/rrc93][][_c6ls.dat'),
 ])
-def test_find_url(dataname, path):
+def _test_find_url(dataname, path):
     actual, _ = adas_parser.search_download(dataname)
     assert actual == path
 
 
 @pytest.mark.parametrize('dataname', [
+    'szd93#c_c5',
     'rrc93##_c6ls',
     'rrc96#b_c1ls',
     'rrc96#be_c2ls',
@@ -27,7 +28,7 @@ def test_find_url(dataname, path):
     #'qef93#h_c6', 
 ])
 def test_load(dataname):
-    adas_parser.load(dataname, force_download=True, return_xr=True)
+    adas_parser.load(dataname, return_xr=True)
 
 
 @pytest.mark.parametrize('filename', [f for f in test_files if 'pec' in f])

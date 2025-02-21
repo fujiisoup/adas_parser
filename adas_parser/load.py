@@ -12,6 +12,9 @@ except ImportError:
     __HAS_XARRAY__ = False
 
 
+def K2eV(K):
+    return 8.617333262145e-5 * K
+
 def split(s):
     return [l for l in s.split(' ') if len(l.strip()) > 0]
 
@@ -286,7 +289,7 @@ def _read_rrc(filename, return_xr):
             data.append(xr.DataArray(
                 r, dims=['Te'], 
                 coords={
-                    'Te': ('Te', Te, {'units': 'K'}), 
+                    'Te': ('Te', K2eV(np.array(Te)), {'units': 'eV'}), 
                     'lower_index': dest - 1, 'upper_index': i,
                     'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
                     'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
@@ -325,7 +328,9 @@ def _read_szd(filename, return_xr):
             line, lines = lines[0], lines[1:]
             rate += [floatF(l) for l in line.split(' ') if len(l.strip()) > 0]
         data.append(xr.DataArray(
-            rate, dims=['Te'], coords={'Te': Te, 'lower_index': block, 'name': name, 'element': element}
+            rate, dims=['Te'], coords={
+                'Te': ('Te', Te, {'units': 'eV'}), 
+                'lower_index': block, 'name': name, 'element': element}
         ))
     return xr.concat(data, dim='lower_index')
 
