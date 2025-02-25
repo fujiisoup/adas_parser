@@ -196,7 +196,14 @@ def _read_qcx(filename, return_xr):
         ]
         
         cs_n, cs_nl, cs_nlm = [], [], []
-        lines = lines[11:]
+        line = lines[6]
+        cs_all = xr.DataArray(
+            [floatF(l) * 1e4 for l in line[11:92].split(' ') if len(l.strip()) > 0],
+            dims=['energy'], 
+            coords={'energy': ('energy', energy, {'units': 'eV/amu'})}, 
+            attrs={'units': 'm^2'}
+        )
+        lines = lines[8:]
         for j, line in enumerate(lines):
             try:
                 n = int(line[:4])
@@ -208,26 +215,32 @@ def _read_qcx(filename, return_xr):
                 try: 
                     m = int(line[7:10])
                     cs_nlm.append(xr.DataArray(
-                        [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                        dims=['energy'], coords={'energy': energy, 'n': n, 'l': l, 'm': m}
+                        [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        dims=['energy'], coords={
+                            'energy': ('energy', energy, {'units': 'eV/amu'}), 
+                            'n': n, 'l': l, 'm': m}, attrs={'units': 'm^2'}
                     ))
                 except ValueError:
                     cs_nl.append(xr.DataArray(
-                        [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                        dims=['energy'], coords={'energy': energy, 'n': n, 'l': l}
+                        [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        dims=['energy'], coords={
+                            'energy': ('energy', energy, {'units': 'eV/amu'}), 
+                            'n': n, 'l': l}, attrs={'units': 'm^2'}
                     ))
             except ValueError:
                 cs_n.append(xr.DataArray(
-                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                    dims=['energy'], coords={'energy': energy, 'n': n}
+                    [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                    dims=['energy'], coords={
+                        'energy': ('energy', energy, {'units': 'eV/amu'}),
+                        'n': n}, attrs={'units': 'm^2'}
                 ))
-        data = xr.Dataset({}, coords={'energy': ('energy', energy, {'units': 'eV/amu'})})
+        data = xr.Dataset({'cross_section_total': cs_all}, coords={'energy': ('energy', energy, {'units': 'eV/amu'})})
+        if len(cs_n) > 0:
+            data['cross_section_n'] = xr.concat(cs_n, dim='n')
         if len(cs_nlm) > 0:
             data['cross_section_nlm'] = xr.concat(cs_nlm, dim='nlm').set_index(nlm=['n', 'l', 'm']).unstack()
         if len(cs_nl) > 0:
             data['cross_section_nl'] = xr.concat(cs_nl, dim='nl').set_index(nl=['n', 'l']).unstack()
-        if len(cs_n) > 0:
-            data['cross_section_n'] = xr.concat(cs_n, dim='n')
         data_all.append(data)
 
     return xr.concat(data_all, dim='energy')

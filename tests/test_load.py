@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pytest
 import adas_parser
 
@@ -50,6 +51,13 @@ def test_read_qcx(filename):
 
     if datafile == 'qcx#h0_gyt#c6.dat':
         assert len(data['energy']) == 27
+        assert data['energy'].attrs['units'] == 'eV/amu'
+        assert data['cross_section_n'].attrs['units'] == 'm^2'
+        assert 1 in data['n']
+        #assert np.allclose(
+        #    data['cross_section_total'], data['cross_section_n'].sum('n'), 
+        #    atol=1e-20, rtol=0.2
+        #)
 
 
 @pytest.mark.parametrize('filename', [f for f in test_files if 'rrc' in f])
