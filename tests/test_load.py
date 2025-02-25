@@ -24,6 +24,7 @@ def _test_find_url(dataname, path):
     'rrc96#b_c1ls',
     'rrc96#be_c2ls',
     'qcx#h0_ory#h1',
+    'qcx#h0_gyt#c6',
     #'qef97#he_2s-s_kvi#c6', 
     #'qef93#h_c6', 
 ])
@@ -46,7 +47,9 @@ def test_read_pec(filename):
 def test_read_qcx(filename):
     datafile = filename[filename.rfind(os.sep) + 1:]
     data = adas_parser._read_file(filename, datafile, return_xr=True)
-    print(data)
+
+    if datafile == 'qcx#h0_gyt#c6.dat':
+        assert len(data['energy']) == 27
 
 
 @pytest.mark.parametrize('filename', [f for f in test_files if 'rrc' in f])

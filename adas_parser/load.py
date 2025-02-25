@@ -177,52 +177,60 @@ def _read_qcx(filename, return_xr):
     receiver = line[:10].replace(' ', '')
     donor = line[10:line.find('/')].replace(' ', '')
 
-    line = lines[1]
-    n_energy = int(line[:line.find('/')])
-    line = lines[2]
-    nmin = int(line[:line.find('/')])
-    line = lines[3]
-    nmax = int(line[:line.find('/')])
-    
-    line = lines[4]
-    energy = [
-        floatF(l) for l in line[:line.find('/')].split(' ') 
-        if len(l.strip()) > 0
-    ]
-    
-    cs_n, cs_nl, cs_nlm = [], [], []
-    for line in lines[12:]:
+    data_all = []
+    while len(lines) > 3:
+        line = lines[1]
         try:
-            n = int(line[:4])
+            n_energy = int(line[:line.find('/')])
         except ValueError:
             break
-        try:
-            l = int(line[4:7])
-            try: 
-                m = int(line[7:10])
-                cs_nlm.append(xr.DataArray(
-                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                    dims=['energy'], coords={'energy': energy, 'n': n, 'l': l, 'm': m}
-                ))
-            except ValueError:
-                cs_nl.append(xr.DataArray(
-                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                    dims=['energy'], coords={'energy': energy, 'n': n, 'l': l}
-                ))
-        except ValueError:
-            cs_n.append(xr.DataArray(
-                [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
-                dims=['energy'], coords={'energy': energy, 'n': n}
-            ))
-    data = xr.Dataset({}, coords={'energy': energy})
-    if len(cs_nlm) > 0:
-        data['cross_section_nlm'] = xr.concat(cs_nlm, dim='nlm').set_index(nlm=['n', 'l', 'm']).unstack()
-    if len(cs_nl) > 0:
-        data['cross_section_nl'] = xr.concat(cs_nl, dim='nl').set_index(nl=['n', 'l']).unstack()
-    if len(cs_n) > 0:
-        data['cross_section_n'] = xr.concat(cs_n, dim='n')
+        line = lines[2]
+        nmin = int(line[:line.find('/')])
+        line = lines[3]
+        nmax = int(line[:line.find('/')])
         
-    return data
+        line = lines[4]
+        energy = [
+            floatF(l) for l in line[:line.find('/')].split(' ') 
+            if len(l.strip()) > 0
+        ]
+        
+        cs_n, cs_nl, cs_nlm = [], [], []
+        lines = lines[11:]
+        for j, line in enumerate(lines):
+            try:
+                n = int(line[:4])
+            except ValueError:
+                lines = lines[j - 1:]
+                break
+            try:
+                l = int(line[4:7])
+                try: 
+                    m = int(line[7:10])
+                    cs_nlm.append(xr.DataArray(
+                        [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        dims=['energy'], coords={'energy': energy, 'n': n, 'l': l, 'm': m}
+                    ))
+                except ValueError:
+                    cs_nl.append(xr.DataArray(
+                        [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        dims=['energy'], coords={'energy': energy, 'n': n, 'l': l}
+                    ))
+            except ValueError:
+                cs_n.append(xr.DataArray(
+                    [floatF(l) for l in line[11:].split(' ') if len(l.strip()) > 0],
+                    dims=['energy'], coords={'energy': energy, 'n': n}
+                ))
+        data = xr.Dataset({}, coords={'energy': ('energy', energy, {'units': 'eV/amu'})})
+        if len(cs_nlm) > 0:
+            data['cross_section_nlm'] = xr.concat(cs_nlm, dim='nlm').set_index(nlm=['n', 'l', 'm']).unstack()
+        if len(cs_nl) > 0:
+            data['cross_section_nl'] = xr.concat(cs_nl, dim='nl').set_index(nl=['n', 'l']).unstack()
+        if len(cs_n) > 0:
+            data['cross_section_n'] = xr.concat(cs_n, dim='n')
+        data_all.append(data)
+
+    return xr.concat(data_all, dim='energy')
 
 
 def _read_rrc(filename, return_xr):
@@ -287,13 +295,13 @@ def _read_rrc(filename, return_xr):
     for i, (Te, rate1) in enumerate(rates):
         for dest, r in rate1:
             data.append(xr.DataArray(
-                r, dims=['Te'], 
+                np.array(r) * 1e-6, dims=['Te'], 
                 coords={
                     'Te': ('Te', K2eV(np.array(Te)), {'units': 'eV'}), 
                     'lower_index': dest - 1, 'upper_index': i,
                     'lower_term': lower_term[dest - 1], 'lower_energy': lower_energy[dest - 1],
                     'upper_term': upper_term[i], 'upper_energy': upper_energy[i],
-                }
+                }, attrs={'units': 'm3/s'}
             ))
     data = xr.concat(data, dim='index')
     for key in ['upper_index', 'lower_index']:
@@ -328,9 +336,10 @@ def _read_szd(filename, return_xr):
             line, lines = lines[0], lines[1:]
             rate += [floatF(l) for l in line.split(' ') if len(l.strip()) > 0]
         data.append(xr.DataArray(
-            rate, dims=['Te'], coords={
+            np.array(rate) * 1e-6, dims=['Te'], coords={
                 'Te': ('Te', Te, {'units': 'eV'}), 
-                'lower_index': block, 'name': name, 'element': element}
+                'lower_index': block, 'name': name, 'element': element
+            }, attrs={'units': 'm3/s'}
         ))
     return xr.concat(data, dim='lower_index')
 
