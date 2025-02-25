@@ -198,7 +198,7 @@ def _read_qcx(filename, return_xr):
         cs_n, cs_nl, cs_nlm = [], [], []
         line = lines[6]
         cs_all = xr.DataArray(
-            [floatF(l) * 1e4 for l in line[11:92].split(' ') if len(l.strip()) > 0],
+            [floatF(l) * 1e-4 for l in line[11:92].split(' ') if len(l.strip()) > 0],
             dims=['energy'], 
             coords={'energy': ('energy', energy, {'units': 'eV/amu'})}, 
             attrs={'units': 'm^2'}
@@ -215,21 +215,21 @@ def _read_qcx(filename, return_xr):
                 try: 
                     m = int(line[7:10])
                     cs_nlm.append(xr.DataArray(
-                        [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        [floatF(l) * 1e-4 for l in line[11:].split(' ') if len(l.strip()) > 0],
                         dims=['energy'], coords={
                             'energy': ('energy', energy, {'units': 'eV/amu'}), 
                             'n': n, 'l': l, 'm': m}, attrs={'units': 'm^2'}
                     ))
                 except ValueError:
                     cs_nl.append(xr.DataArray(
-                        [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                        [floatF(l) * 1e-4 for l in line[11:].split(' ') if len(l.strip()) > 0],
                         dims=['energy'], coords={
                             'energy': ('energy', energy, {'units': 'eV/amu'}), 
                             'n': n, 'l': l}, attrs={'units': 'm^2'}
                     ))
             except ValueError:
                 cs_n.append(xr.DataArray(
-                    [floatF(l) * 1e4 for l in line[11:].split(' ') if len(l.strip()) > 0],
+                    [floatF(l) * 1e-4 for l in line[11:].split(' ') if len(l.strip()) > 0],
                     dims=['energy'], coords={
                         'energy': ('energy', energy, {'units': 'eV/amu'}),
                         'n': n}, attrs={'units': 'm^2'}
