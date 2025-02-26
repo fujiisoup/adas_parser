@@ -191,7 +191,7 @@ def _read_qcx(filename, return_xr):
         
         line = lines[4]
         energy = [
-            floatF(l) for l in line[:line.find('/')].split(' ') 
+            floatF(l) * 1e3 for l in line[:line.find('/')].split(' ')  # make eV from keV
             if len(l.strip()) > 0
         ]
         
