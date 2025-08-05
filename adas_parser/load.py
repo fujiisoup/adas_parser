@@ -157,10 +157,10 @@ def _read_pec(filename, return_xr):
 
     if return_xr:
         data = xr.concat(data, dim='index')
-        if data['TYPE'].ndim != 0:
-            return data.set_index(index=['line', 'TYPE']).unstack()
-        else:
-            return data.swap_dims(index='line').expand_dims('TYPE')            
+        possible_keys = ['line', 'TYPE', 'INDM']
+        setindex_keys = [key for key in possible_keys if data[key].ndim != 0]
+        expand_keys = [key for key in possible_keys if data[key].ndim == 0]
+        return data.set_index(index=setindex_keys).unstack().expand_dims(expand_keys)
     return data
 
 
